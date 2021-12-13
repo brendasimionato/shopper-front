@@ -32,6 +32,8 @@
 .total {
   float: right;
   margin-right: 5px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .img-logo {
@@ -58,4 +60,16 @@
 
 .container-form {
   padding-top: 30px;
+}
+
+.row-buttons {
+  padding-top: 60px;
+}
+
+.row-buttons button {
+  width: 100px;
+}
+
+.btn-cancel {
+  float: right;
 }

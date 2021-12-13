@@ -3,45 +3,101 @@ import { Typeahead } from 'react-bootstrap-typeahead'
 import { useEffect, useState } from "react";
 import { FaPlusCircle, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import logo from '../../src/logo-shopper.png'
+import axios from "axios";
 
 import 'react-bootstrap-typeahead/css/Typeahead.css'
 
 export default function Order() {
 
-    const [selected, setSelected] = useState([]);
-    const [addedProducts, setAddedProducts] = useState([]);
-    const [qty, setQty] = useState("");
-    const [total, setTotal] = useState(0);
-    const [showAlertQty, setShowAlertQty] = useState(false)
-    const products = [
-        {
-            id: 1,
-            name: "Name product",
-            price: 20,
-            qty_stock: 10
-        },
-        {
-            id: 2,
-            name: "Name product 2",
-            price: 20,
-            qty_stock: 10
-        },
-        {
-            id: 3,
-            name: "Name product 3",
-            price: 20,
-            qty_stock: 10
+    const [selected, setSelected] = useState([])
+    const [addedProducts, setAddedProducts] = useState([])
+    const [clientName, setClientName] = useState("")
+    const [deliveryDate, setDeliveryDate] = useState("")
+    const [qty, setQty] = useState("")
+    const [total, setTotal] = useState(0)
+    const [showAlertError, setShowAlertError] = useState(false)
+    const [showAlertSuccess, setShowAlertSuccess] = useState(false)
+    const [alertMsgError, setAlertMsgError] = useState("")
+    const [products, setProducts] = useState([])
+
+    const listProducts = () => {
+        const url = `http://localhost:3001/products`
+        axios.get(url, {})
+            .then(res => {
+                setProducts(res.data)
+            })
+            .catch(err => {
+                console.log(`Error on get list products`)
+            })
+    }
+
+    const onClickCreateOrder = () => {
+
+        if (clientName === "" || deliveryDate === "" || addedProducts.length <= 0 ) {
+            setAlertMsgError("Você precisa adicionar todas as informações para criar o pedido.")
+            setShowAlertError(true)
+            return
         }
-    ]
+
+        const url = `http://localhost:3001/orders`
+        const body = {
+            client_name: clientName,
+            delivery_date: deliveryDate,
+            products: addedProducts,
+            total: total
+        }
+        console.log(body)
+
+        axios.post(url, body, {})
+            .then(res => {
+                setShowAlertSuccess(true)
+                clearFields()
+            })
+            .catch(err => {
+                console.log(err)
+                setShowAlertError("Não foi possível criar seu pedido.")
+                clearFields()
+            })
+    }
+    
+    const onClickCancelOrder = () => {
+        clearFields()
+    }
+
+    const clearFields = () => {
+        setClientName("")
+        setDeliveryDate("")
+        setAddedProducts([])
+        setQty("")
+        setTotal(0)
+        setSelected([])
+        setAlertMsgError(false)
+    }
 
     const onChangeQty = (event) => {
         setQty(event.target.value)
     }
 
+    const onChangeClientName = (event) => {
+        setClientName(event.target.value)
+    }
+
+    const onChangeDeliveryDate = (event) => {
+        setDeliveryDate(event.target.value)
+    }
+
     const onClickAddedProduct = () => {
 
-        if (qty <= 0) {
-            setShowAlertQty(true)
+        if (qty === null || qty === "" || qty <= 0) {
+            setAlertMsgError("Você precisa escolher a quantidade desejada.")
+            setShowAlertError(true)
+            return
+        }
+
+
+        if (qty > selected[0].qty_stock) {
+            setAlertMsgError("A quantidade que você deseja não esta disponível.")
+            setShowAlertError(true)
             return
         }
 
@@ -105,6 +161,12 @@ export default function Order() {
         )
     })
 
+
+    useEffect(() => {
+        listProducts()
+    }, [])
+
+
     return (
         <Container fluid>
             <Row>
@@ -117,21 +179,24 @@ export default function Order() {
 
             </Row>
             <Container className="container-form">
-            <Alert show={showAlertQty} onClose={() => setShowAlertQty(false)} dismissible variant="danger">
-                Você precisa escolher a quantidade desejada.
+            <Alert show={showAlertError} onClose={() => setShowAlertError(false)} dismissible variant="danger">
+                {alertMsgError}
+            </Alert>
+            <Alert show={showAlertSuccess} onClose={() => setShowAlertSuccess(false)} dismissible variant="success">
+                Pedido criado com sucesso.
             </Alert>
                 <Row>
                     <Form>
                         <Col className="col-client-name">
                             <Form.Group className="mb-3" controlId="formBasicClientName">
                                 <Form.Label>Nome cliente: </Form.Label>
-                                <Form.Control type="text" placeholder="Insira o nome do cliente"></Form.Control>
+                                <Form.Control onChange={onChangeClientName} value={clientName} type="text" placeholder="Insira o nome do cliente"></Form.Control>
                             </Form.Group>
                         </Col>
                         <Col className="col-delivery-date">
                             <Form.Group className="mb-3" controlId="formBasicDeliveryDate">
                                 <Form.Label>Data de entrega: </Form.Label>
-                                <Form.Control type="date" placeholder="Insira data de entrega"></Form.Control>
+                                <Form.Control onChange={onChangeDeliveryDate} value={deliveryDate} type="date" placeholder="Insira data de entrega"></Form.Control>
                             </Form.Group>
                         </Col>
 
@@ -178,7 +243,17 @@ export default function Order() {
                 <Row className="total">
                     Total: {total.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })}
                 </Row>
+
+                <Row className="row-buttons">
+                    <Col>
+                        <Button onClick={onClickCancelOrder} className="btn-cancel" variant="secondary">Cancelar</Button>{' '}
+                    </Col>
+                    <Col>
+                        <Button onClick={onClickCreateOrder} className="btn-create" variant="success">Criar</Button>
+                    </Col>                    
+                </Row>
             </Container>
+
 
         </Container>
     )
