@@ -2,8 +2,8 @@ import { Container, Row, Form, Button, Table, Col, Alert } from "react-bootstrap
 import { Typeahead } from 'react-bootstrap-typeahead'
 import { useEffect, useState } from "react";
 import { FaPlusCircle, FaTrashAlt, FaEdit } from 'react-icons/fa';
-import logo from '../../src/logo-shopper.png'
 import axios from "axios";
+import Logo from "./Logo";
 
 import 'react-bootstrap-typeahead/css/Typeahead.css'
 
@@ -43,8 +43,8 @@ export default function Order() {
         const body = {
             client_name: clientName,
             delivery_date: deliveryDate,
-            products: addedProducts,
-            total: total
+            total: Number(total),
+            products: addedProducts
         }
         console.log(body)
 
@@ -106,7 +106,7 @@ export default function Order() {
             name: selected[0].name,
             price: selected[0].price,
             qty_stock: selected[0].qty_stock,
-            qty: qty
+            qty_order: Number(qty)
         }
 
         let p = null;
@@ -117,7 +117,7 @@ export default function Order() {
             } else return true
         })
 
-        setTotal(substractTotalFromProduct(p) + (product.price * product.qty))
+        setTotal(substractTotalFromProduct(p) + (product.price * product.qty_order))
         setAddedProducts([...filteredProducts, product])
         setSelected([])
         setQty("")
@@ -125,13 +125,13 @@ export default function Order() {
     }
 
     const substractTotalFromProduct = (product) => {
-        return (product) ? total - (product.price * product.qty) : total
+        return (product) ? total - (product.price * product.qty_order) : total
     }
 
     const onClickDeleteProduct = (productId) => {
         const updatedProducts = addedProducts.filter(product => {
             if (product.id == productId) {
-                setTotal(total - (product.price * product.qty))
+                setTotal(total - (product.price * product.qty_order))
                 return false
             } else return true
         })
@@ -140,7 +140,7 @@ export default function Order() {
 
     const onClickEditProduct = (product) => {
         setSelected([product])
-        setQty(product.qty)
+        setQty(product.qty_order)
     }
 
     const listAddedProducts = addedProducts.map(product => {
@@ -170,9 +170,7 @@ export default function Order() {
     return (
         <Container fluid>
             <Row>
-                <Col className="col-logo">
-                    <img className="img-logo" src={logo}></img>
-                </Col>
+                <Logo></Logo>
                 <Col className="col-logo-desc">
                     <span>Cadastro de Pedidos</span>
                 </Col>
