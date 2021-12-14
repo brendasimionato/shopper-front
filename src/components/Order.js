@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { FaPlusCircle, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import axios from "axios";
 import Logo from "./Logo";
+import '../config'
 
 import 'react-bootstrap-typeahead/css/Typeahead.css'
+import PageName from "./PageName";
 
 export default function Order() {
 
@@ -21,7 +23,7 @@ export default function Order() {
     const [products, setProducts] = useState([])
 
     const listProducts = () => {
-        const url = `http://localhost:3001/products`
+        const url = `${global.config.uri.shopper.api}/products`
         axios.get(url, {})
             .then(res => {
                 setProducts(res.data)
@@ -39,7 +41,7 @@ export default function Order() {
             return
         }
 
-        const url = `http://localhost:3001/orders`
+        const url = `${global.config.uri.shopper.api}/orders`
         const body = {
             client_name: clientName,
             delivery_date: deliveryDate,
@@ -171,10 +173,7 @@ export default function Order() {
         <Container fluid>
             <Row>
                 <Logo></Logo>
-                <Col className="col-logo-desc">
-                    <span>Cadastro de Pedidos</span>
-                </Col>
-
+                <PageName title="Cadastro de Pedidos"></PageName>
             </Row>
             <Container className="container-form">
             <Alert show={showAlertError} onClose={() => setShowAlertError(false)} dismissible variant="danger">
