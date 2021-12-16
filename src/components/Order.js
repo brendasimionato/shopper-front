@@ -48,7 +48,6 @@ export default function Order() {
             total: Number(total),
             products: addedProducts
         }
-        console.log(body)
 
         axios.post(url, body, {})
             .then(res => {
